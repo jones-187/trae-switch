@@ -19,6 +19,7 @@ import (
 
 const (
 	DefaultListenAddr = "127.0.0.1"
+	LanListenAddr = "0.0.0.0"
 	DefaultListenPort = 443
 )
 

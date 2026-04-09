@@ -20,6 +20,7 @@ type App struct {
 	hostsManager *hosts.HostsManager
 	trustManager *truststore.TrustStoreManager
 	proxyServer  *proxy.ProxyServer
+	lanMode      bool
 }
 
 func NewApp() *App {
@@ -55,6 +56,34 @@ func (a *App) startup(ctx context.Context) {
 	}
 
 	log.Println("Application started successfully")
+}
+
+func (a *App) SetLanMode(enabled bool) error {
+	if a.IsProxyRunning() {
+		if err := a.StopProxy(); err != nil {
+			return fmt.Errorf("停止代理失败：%w", err)
+		}
+	}
+
+	a.lanMode = enabled
+	listenAddr := "127.0.0.1"
+	if enabled {
+		listenAddr = "0.0.0.0"
+	}
+
+	a.proxyServer = proxy.NewProxyServer(listenAddr, 443)
+
+	if a.IsProxyRunning() {
+		if err := a.StartProxy(); err != nil {
+			return fmt.Errorf("启动代理失败：%w", err)
+		}
+	}
+
+	return nil
+}
+
+func (a *App) IsLanMode() bool {
+	return a.lanMode
 }
 
 func (a *App) GetStatus() map[string]interface{} {
