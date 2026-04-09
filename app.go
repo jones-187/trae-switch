@@ -59,7 +59,8 @@ func (a *App) startup(ctx context.Context) {
 }
 
 func (a *App) SetLanMode(enabled bool) error {
-	if a.IsProxyRunning() {
+	running := a.IsProxyRunning()
+	if running {
 		if err := a.StopProxy(); err != nil {
 			return fmt.Errorf("停止代理失败：%w", err)
 		}
@@ -73,7 +74,7 @@ func (a *App) SetLanMode(enabled bool) error {
 
 	a.proxyServer = proxy.NewProxyServer(listenAddr, 443)
 
-	if a.IsProxyRunning() {
+	if running {
 		if err := a.StartProxy(); err != nil {
 			return fmt.Errorf("启动代理失败：%w", err)
 		}
@@ -99,6 +100,7 @@ func (a *App) GetStatus() map[string]interface{} {
 		"portProcess":      portProcess,
 		"activeProvider":   nil,
 		"activeTargetURL":  "",
+		"lanMode":          a.lanMode,
 	}
 
 	if a.hostsManager != nil {

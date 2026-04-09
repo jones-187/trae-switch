@@ -2,6 +2,7 @@
   import { onMount } from 'svelte'
   import Button from './components/ui/Button.svelte'
   import Card from './components/ui/Card.svelte'
+  import Switch from './components/ui/Switch.svelte'
 
   let status = {
     runningAsAdmin: false,
@@ -12,7 +13,8 @@
     portAvailable: true,
     portProcess: '',
     activeProvider: null,
-    activeTargetURL: ''
+    activeTargetURL: '',
+    lanMode: false
   }
 
   let providers = []
@@ -294,6 +296,18 @@
     }
   }
 
+  async function toggleLanMode(enabled) {
+    loading = true
+    try {
+      await window.go.main.App.SetLanMode(enabled)
+      await refreshStatus()
+      showSuccess(enabled ? '局域网监听已开启' : '局域网监听已关闭')
+    } catch (e) {
+      showError(e.message || String(e))
+    }
+    loading = false
+  }
+
   $: adminWarning = !status.runningAsAdmin
   $: portWarning = !status.portAvailable && !status.proxyRunning
   $: primaryButtonDisabled = loading || (!status.proxyRunning && (adminWarning || portWarning))
@@ -439,56 +453,76 @@
     <Card className="p-4">
       <h2 class="mb-4 font-semibold">系统配置</h2>
 
-      <div class="grid grid-cols-2 gap-3">
-        <div class="rounded-lg bg-muted/50 p-3">
-          <div class="flex items-center gap-3">
-            {#if status.hostsSet}
-              <span class="h-2 w-2 rounded-full bg-success"></span>
-            {:else}
-              <span class="h-2 w-2 rounded-full bg-muted-foreground"></span>
-            {/if}
+      <div class="space-y-3">
+        <div class="grid grid-cols-2 gap-3">
+          <div class="rounded-lg bg-muted/50 p-3">
+            <div class="flex items-center gap-3">
+              {#if status.hostsSet}
+                <span class="h-2 w-2 rounded-full bg-success"></span>
+              {:else}
+                <span class="h-2 w-2 rounded-full bg-muted-foreground"></span>
+              {/if}
 
-            <div>
-              <div class="text-sm font-medium">Hosts 配置</div>
-              <div class="text-xs text-muted-foreground">
-                {status.hostsSet ? '已设置' : '未设置'}
+              <div>
+                <div class="text-sm font-medium">Hosts 配置</div>
+                <div class="text-xs text-muted-foreground">
+                  {status.hostsSet ? '已设置' : '未设置'}
+                </div>
               </div>
+            </div>
+
+            <div class="mt-3 flex flex-wrap gap-2">
+              <Button variant="ghost" size="sm" on:click={setHosts} disabled={loading || status.hostsSet}>
+                设置
+              </Button>
+              <Button variant="ghost" size="sm" on:click={restoreHosts} disabled={loading || !status.hostsSet}>
+                恢复
+              </Button>
             </div>
           </div>
 
-          <div class="mt-3 flex flex-wrap gap-2">
-            <Button variant="ghost" size="sm" on:click={setHosts} disabled={loading || status.hostsSet}>
-              设置
-            </Button>
-            <Button variant="ghost" size="sm" on:click={restoreHosts} disabled={loading || !status.hostsSet}>
-              恢复
-            </Button>
+          <div class="rounded-lg bg-muted/50 p-3">
+            <div class="flex items-center gap-3">
+              {#if status.certInstalled}
+                <span class="h-2 w-2 rounded-full bg-success"></span>
+              {:else}
+                <span class="h-2 w-2 rounded-full bg-muted-foreground"></span>
+              {/if}
+
+              <div>
+                <div class="text-sm font-medium">CA 证书</div>
+                <div class="text-xs text-muted-foreground">
+                  {status.certInstalled ? '已安装' : '未安装'}
+                </div>
+              </div>
+            </div>
+
+            <div class="mt-3 flex flex-wrap gap-2">
+              <Button variant="ghost" size="sm" on:click={installCert} disabled={loading || status.certInstalled}>
+                安装
+              </Button>
+              <Button variant="ghost" size="sm" on:click={uninstallCert} disabled={loading || !status.certInstalled}>
+                卸载
+              </Button>
+            </div>
           </div>
         </div>
 
         <div class="rounded-lg bg-muted/50 p-3">
-          <div class="flex items-center gap-3">
-            {#if status.certInstalled}
-              <span class="h-2 w-2 rounded-full bg-success"></span>
-            {:else}
-              <span class="h-2 w-2 rounded-full bg-muted-foreground"></span>
-            {/if}
-
-            <div>
-              <div class="text-sm font-medium">CA 证书</div>
-              <div class="text-xs text-muted-foreground">
-                {status.certInstalled ? '已安装' : '未安装'}
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-3">
+              <div>
+                <div class="text-sm font-medium">监听局域网</div>
+                <div class="text-xs text-muted-foreground">
+                  {status.lanMode ? '已开启' : '已关闭'}
+                </div>
               </div>
             </div>
-          </div>
-
-          <div class="mt-3 flex flex-wrap gap-2">
-            <Button variant="ghost" size="sm" on:click={installCert} disabled={loading || status.certInstalled}>
-              安装
-            </Button>
-            <Button variant="ghost" size="sm" on:click={uninstallCert} disabled={loading || !status.certInstalled}>
-              卸载
-            </Button>
+            <Switch
+              bind:checked={status.lanMode}
+              on:click={() => toggleLanMode(!status.lanMode)}
+              disabled={loading}
+            />
           </div>
         </div>
       </div>
