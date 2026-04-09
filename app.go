@@ -59,25 +59,37 @@ func (a *App) startup(ctx context.Context) {
 }
 
 func (a *App) SetLanMode(enabled bool) error {
+	log.Printf("设置局域网监听模式：%v", enabled)
+	
 	running := a.IsProxyRunning()
 	if running {
+		log.Printf("代理正在运行，准备停止代理以应用新配置")
 		if err := a.StopProxy(); err != nil {
+			log.Printf("停止代理失败：%v", err)
 			return fmt.Errorf("停止代理失败：%w", err)
 		}
+		log.Printf("代理已停止")
 	}
 
 	a.lanMode = enabled
 	listenAddr := "127.0.0.1"
 	if enabled {
 		listenAddr = "0.0.0.0"
+		log.Printf("局域网监听已开启，监听地址：%s", listenAddr)
+	} else {
+		log.Printf("局域网监听已关闭，监听地址：%s", listenAddr)
 	}
 
 	a.proxyServer = proxy.NewProxyServer(listenAddr, 443)
+	log.Printf("代理服务器已重新初始化，监听地址：%s", listenAddr)
 
 	if running {
+		log.Printf("准备重新启动代理")
 		if err := a.StartProxy(); err != nil {
+			log.Printf("启动代理失败：%v", err)
 			return fmt.Errorf("启动代理失败：%w", err)
 		}
+		log.Printf("代理已重新启动")
 	}
 
 	return nil
