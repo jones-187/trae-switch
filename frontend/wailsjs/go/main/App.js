@@ -34,6 +34,10 @@ export function IsHostsSet() {
   return window['go']['main']['App']['IsHostsSet']();
 }
 
+export function IsLanMode() {
+  return window['go']['main']['App']['IsLanMode']();
+}
+
 export function IsProxyRunning() {
   return window['go']['main']['App']['IsProxyRunning']();
 }
@@ -60,6 +64,10 @@ export function SetActiveProvider(arg1) {
 
 export function SetHosts() {
   return window['go']['main']['App']['SetHosts']();
+}
+
+export function SetLanMode(arg1) {
+  return window['go']['main']['App']['SetLanMode'](arg1);
 }
 
 export function StartProxy() {

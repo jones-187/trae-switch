@@ -17,6 +17,8 @@ export function IsCertificateInstalled():Promise<boolean>;
 
 export function IsHostsSet():Promise<boolean>;
 
+export function IsLanMode():Promise<boolean>;
+
 export function IsProxyRunning():Promise<boolean>;
 
 export function IsRunningAsAdmin():Promise<boolean>;
@@ -30,6 +32,8 @@ export function RestoreHosts():Promise<void>;
 export function SetActiveProvider(arg1:number):Promise<void>;
 
 export function SetHosts():Promise<void>;
+
+export function SetLanMode(arg1:boolean):Promise<void>;
 
 export function StartProxy():Promise<void>;
 
