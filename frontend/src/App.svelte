@@ -308,6 +308,14 @@
     loading = false
   }
 
+  let lanModeBefore = status.lanMode
+  $: if (status.lanMode !== lanModeBefore) {
+    lanModeBefore = status.lanMode
+    if (!loading) {
+      toggleLanMode(status.lanMode)
+    }
+  }
+
   $: adminWarning = !status.runningAsAdmin
   $: portWarning = !status.portAvailable && !status.proxyRunning
   $: primaryButtonDisabled = loading || (!status.proxyRunning && (adminWarning || portWarning))
@@ -520,7 +528,6 @@
             </div>
             <Switch
               bind:checked={status.lanMode}
-              on:click={() => toggleLanMode(!status.lanMode)}
               disabled={loading}
             />
           </div>
