@@ -16,6 +16,7 @@ type Provider struct {
 type Config struct {
 	Providers      []Provider `json:"providers"`
 	ActiveProvider int        `json:"active_provider"`
+	LanMode        bool       `json:"lan_mode"`
 	mu             sync.RWMutex
 }
 
@@ -156,4 +157,23 @@ func GetModels() []string {
 		return []string{}
 	}
 	return provider.Models
+}
+
+func GetLanMode() bool {
+	if cfg == nil {
+		return false
+	}
+	cfg.mu.RLock()
+	defer cfg.mu.RUnlock()
+	return cfg.LanMode
+}
+
+func SetLanMode(lanMode bool) error {
+	if cfg == nil {
+		return nil
+	}
+	cfg.mu.Lock()
+	defer cfg.mu.Unlock()
+	cfg.LanMode = lanMode
+	return cfg.Save()
 }

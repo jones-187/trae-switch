@@ -304,15 +304,8 @@
       showSuccess(enabled ? '局域网监听已开启' : '局域网监听已关闭')
     } catch (e) {
       showError(e.message || String(e))
-    }
-    loading = false
-  }
-
-  let lanModeBefore = status.lanMode
-  $: if (status.lanMode !== lanModeBefore) {
-    lanModeBefore = status.lanMode
-    if (!loading) {
-      toggleLanMode(status.lanMode)
+    } finally {
+      loading = false
     }
   }
 
@@ -528,6 +521,7 @@
             </div>
             <Switch
               bind:checked={status.lanMode}
+              on:change={(e) => toggleLanMode(e.target.checked)}
               disabled={loading}
             />
           </div>

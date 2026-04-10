@@ -43,7 +43,6 @@ func (a *App) startup(ctx context.Context) {
 
 	a.certManager = cert.NewCertificateManager(dataDir)
 	a.hostsManager = hosts.NewHostsManager()
-	a.proxyServer = proxy.NewProxyServer("127.0.0.1", 443)
 
 	if err := a.certManager.LoadOrGenerateCA(); err != nil {
 		log.Printf("Failed to load/generate CA: %v", err)
@@ -55,11 +54,25 @@ func (a *App) startup(ctx context.Context) {
 		log.Printf("Failed to load config: %v", err)
 	}
 
-	log.Println("Application started successfully")
+	// 从配置文件加载 LanMode 状态
+	a.lanMode = config.GetLanMode()
+	listenAddr := "127.0.0.1"
+	if a.lanMode {
+		listenAddr = "0.0.0.0"
+	}
+	a.proxyServer = proxy.NewProxyServer(listenAddr, 443)
+	log.Printf("Application started successfully, LanMode: %v, ListenAddr: %s", a.lanMode, listenAddr)
 }
 
 func (a *App) SetLanMode(enabled bool) error {
 	log.Printf("设置局域网监听模式：%v", enabled)
+	
+	// 保存到配置文件
+	if err := config.SetLanMode(enabled); err != nil {
+		log.Printf("保存 LanMode 配置失败：%v", err)
+		return fmt.Errorf("保存配置失败：%w", err)
+	}
+	log.Printf("LanMode 配置已保存：%v", enabled)
 	
 	running := a.IsProxyRunning()
 	if running {
